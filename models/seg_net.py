@@ -1,8 +1,12 @@
+## codes from issues
+import sys
+sys.path.insert(0, '/media/rnatsume/Natsume/ICT/pytorch-semantic-segmentation')
+
 import torch
 from torch import nn
 from torchvision import models
 
-from ..utils import initialize_weights
+from utils import initialize_weights
 from .config import vgg19_bn_path
 
 

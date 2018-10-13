@@ -4,7 +4,7 @@ from math import sqrt
 
 import numpy as np
 import torchvision.transforms as standard_transforms
-from tensorboard import SummaryWriter
+from tensorboardX import SummaryWriter
 from torch import optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader

@@ -13,7 +13,7 @@ implemented in PyTorch
 
 ## Requirement
 1. PyTorch 0.2.0
-2. TensorBoard for PyTorch. [Here](https://github.com/lanpa/tensorboard-pytorch)  to install
+2. tensorboardX for PyTorch. [Here](https://github.com/lanpa/tensorboardX-pytorch)  to install
 3. Some other libraries (find what you miss when running the code :-P)
 
 ## Preparation

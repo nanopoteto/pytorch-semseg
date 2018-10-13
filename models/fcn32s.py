@@ -1,8 +1,13 @@
+## codes from issues
+import sys
+sys.path.insert(0, '/media/rnatsume/Natsume/ICT/pytorch-semantic-segmentation')
+
 import torch
 from torch import nn
 from torchvision import models
 
-from ..utils import get_upsampling_weight
+# from ..utils import get_upsampling_weight
+from utils.misc import get_upsampling_weight
 from .config import vgg16_caffe_path
 
 

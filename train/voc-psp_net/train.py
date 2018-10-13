@@ -5,7 +5,7 @@ from math import sqrt
 import numpy as np
 import torchvision.transforms as standard_transforms
 import torchvision.utils as vutils
-from tensorboard import SummaryWriter
+from tensorboardX import SummaryWriter
 from torch import optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
@@ -21,7 +21,7 @@ exp_name = 'voc-psp_net'
 writer = SummaryWriter(os.path.join(ckpt_path, 'exp', exp_name))
 
 args = {
-    'train_batch_size': 1,
+    'train_batch_size': 4,
     'lr': 1e-2 / sqrt(16 / 4),
     'lr_decay': 0.9,
     'max_iter': 3e4,
@@ -42,7 +42,7 @@ def main():
     net = PSPNet(num_classes=voc.num_classes).cuda()
 
     if len(args['snapshot']) == 0:
-        net.load_state_dict(torch.load(os.path.join(ckpt_path, 'cityscapes (coarse)-psp_net', 'xx.pth')))
+        # net.load_state_dict(torch.load(os.path.join(ckpt_path, 'cityscapes (coarse)-psp_net', 'xx.pth')))
         curr_epoch = 1
         args['best_record'] = {'epoch': 0, 'val_loss': 1e10, 'acc': 0, 'acc_cls': 0, 'mean_iu': 0, 'fwavacc': 0}
     else:
@@ -58,7 +58,8 @@ def main():
     mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
     train_joint_transform = joint_transforms.Compose([
-        joint_transforms.Scale(args['longer_size']),
+        # joint_transforms.Scale(args['longer_size']),
+        joint_transforms.RandomSized(args['crop_size']),
         joint_transforms.RandomRotate(10),
         joint_transforms.RandomHorizontallyFlip()
     ])
@@ -79,7 +80,7 @@ def main():
 
     train_set = voc.VOC('train', joint_transform=train_joint_transform, sliding_crop=sliding_crop,
                                       transform=train_input_transform, target_transform=target_transform)
-    train_loader = DataLoader(train_set, batch_size=args['train_batch_size'], num_workers=8, shuffle=True)
+    train_loader = DataLoader(train_set, batch_size=args['train_batch_size'], num_workers=8, shuffle=False)
     val_set = voc.VOC('val', transform=val_input_transform, sliding_crop=sliding_crop,
                                     target_transform=target_transform)
     val_loader = DataLoader(val_set, batch_size=1, num_workers=8, shuffle=False)
@@ -125,6 +126,7 @@ def train(train_loader, net, criterion, optimizer, curr_epoch, train_args, val_l
             slice_batch_pixel_size = inputs.size(1) * inputs.size(3) * inputs.size(4)
 
             for inputs_slice, gts_slice in zip(inputs, gts):
+
                 inputs_slice = Variable(inputs_slice).cuda()
                 gts_slice = Variable(gts_slice).cuda()
 
@@ -148,13 +150,17 @@ def train(train_loader, net, criterion, optimizer, curr_epoch, train_args, val_l
             writer.add_scalar('lr', optimizer.param_groups[1]['lr'], curr_iter)
 
             if (i + 1) % train_args['print_freq'] == 0:
+
                 print('[epoch %d], [iter %d / %d], [train main loss %.5f], [train aux loss %.5f]. [lr %.10f]' % (
                     curr_epoch, i + 1, len(train_loader), train_main_loss.avg, train_aux_loss.avg,
                     optimizer.param_groups[1]['lr']))
             if curr_iter >= train_args['max_iter']:
                 return
+
         validate(val_loader, net, criterion, optimizer, curr_epoch, train_args, visualize)
+
         curr_epoch += 1
+
 
 
 def validate(val_loader, net, criterion, optimizer, epoch, train_args, visualize):

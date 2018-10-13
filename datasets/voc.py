@@ -8,7 +8,7 @@ from torch.utils import data
 
 num_classes = 21
 ignore_label = 255
-root = '/media/b3-542/LIBRARY/Datasets/VOC'
+root = '/media/rnatsume/Natsume/ICT/VOC'
 
 '''
 color map
@@ -74,18 +74,21 @@ class VOC(data.Dataset):
     def __getitem__(self, index):
         if self.mode == 'test':
             img_path, img_name = self.imgs[index]
+
             img = Image.open(os.path.join(img_path, img_name + '.jpg')).convert('RGB')
             if self.transform is not None:
                 img = self.transform(img)
             return img_name, img
 
         img_path, mask_path = self.imgs[index]
+
         img = Image.open(img_path).convert('RGB')
         if self.mode == 'train':
             mask = sio.loadmat(mask_path)['GTcls']['Segmentation'][0][0]
             mask = Image.fromarray(mask.astype(np.uint8))
         else:
             mask = Image.open(mask_path)
+
 
         if self.joint_transform is not None:
             img, mask = self.joint_transform(img, mask)
@@ -97,7 +100,9 @@ class VOC(data.Dataset):
             if self.target_transform is not None:
                 mask_slices = [self.target_transform(e) for e in mask_slices]
             img, mask = torch.stack(img_slices, 0), torch.stack(mask_slices, 0)
+
             return img, mask, torch.LongTensor(slices_info)
+
         else:
             if self.transform is not None:
                 img = self.transform(img)
